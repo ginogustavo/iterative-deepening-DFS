@@ -4,7 +4,9 @@ import java.util.List;
 
 public class TreeSearch {
 
-	int[][] goal_state = new int[4][4]; // Target goal configuration
+	private int[][] goal_state = new int[4][4]; // Target goal configuration
+	private int nodeCount = 0; // Number of Nodes Expanded
+	private int cutOff = 0; // Track the limit in case of cutoff
 
 	// Initializing the Target goal configuration
 	public TreeSearch() {
@@ -21,6 +23,7 @@ public class TreeSearch {
 	}
 
 	/**
+	 * Depth Limited Search
 	 * 
 	 * @param problem
 	 * @param limit
@@ -36,24 +39,14 @@ public class TreeSearch {
 
 	}
 
-	public void printNode(Node node) {
-		int[][] a = node.getStateArray();
-		System.out.println("\n");
-		System.out.println("---------------------------------");
-		for (int i = 0; i < 4; i++) {
-			for (int j = 0; j < 4; j++) {
-				System.out.print(a[i][j] + "\t| ");
-			}
-			System.out.print("\n---------------------------------\n");
-		}
-
-	}
-
-	public int nodeCount = 0;
-
+	/**
+	 * Recursive Depth Limited Search
+	 * 
+	 * @param node
+	 * @param limit
+	 * @return
+	 */
 	public Result recursive_DLS(Node node, int limit) {
-
-		//printNode(node);
 
 		nodeCount++;
 
@@ -71,7 +64,6 @@ public class TreeSearch {
 			for (Action action : actions) {
 
 				Node child = childNode(node, action);
-
 				Result result = recursive_DLS(child, limit - 1);
 
 				if (result instanceof Cutoff) // if result = cutoff
@@ -88,13 +80,34 @@ public class TreeSearch {
 		}
 	}
 
-	public void iterative_deepening_search(String problem) {
+	/**
+	 * Iterative Deepening Search
+	 * 
+	 * @param problem
+	 * @return
+	 */
+	public Result iterative_deepening_search(String problem) {
+
+		int depth = 0;
+		Result result = null;
+
+		while (true) { // Depth 0-> infinite
+
+			result = depth_limited_search(problem, depth);
+			if (!(result instanceof Cutoff)) { // if it's different than cuttoff
+				setCutOff(depth);
+				return result;
+			}
+			depth++;
+		}
+
 	}
 
 	////////////////////////// Utility methods ///////////////////
 
 	/**
 	 * Test the goal by comparing the given state(array) with the target
+	 * 
 	 * @param nodeState
 	 * @return
 	 */
@@ -111,6 +124,7 @@ public class TreeSearch {
 
 	/**
 	 * Create a new Child
+	 * 
 	 * @param parent
 	 * @param action
 	 * @return
@@ -122,11 +136,10 @@ public class TreeSearch {
 		newChild.setMoves(parent.getMoves());
 		newChild.setStateArray(parent.getStateArray());
 
-		// Getting position of 0 in the matrix: e.g.  2,3
+		// Getting position of 0 in the matrix: e.g. 2,3
 		String xyPosition = Node.getZeroPosition(newChild.getStateArray());
 		int xpos = Integer.parseInt(xyPosition.charAt(0) + "");
 		int ypos = Integer.parseInt(xyPosition.charAt(2) + "");
-
 		int oldXPosition = xpos;
 		int newXPosition = xpos;
 		int oldYPosition = ypos;
@@ -172,6 +185,22 @@ public class TreeSearch {
 		// Assign new matrix to the created Child node
 		newChild.setStateArray(tempNew);
 		return newChild;
+	}
+
+	public int getNodeCount() {
+		return nodeCount;
+	}
+
+	public void setNodeCount(int nodeCount) {
+		this.nodeCount = nodeCount;
+	}
+
+	public int getCutOff() {
+		return cutOff;
+	}
+
+	public void setCutOff(int cutOff) {
+		this.cutOff = cutOff;
 	}
 
 }
